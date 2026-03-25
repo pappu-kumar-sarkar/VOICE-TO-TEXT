@@ -16,10 +16,13 @@ class SpeechController extends Controller
     public function saveText(Request $request)
     {
         $request->validate([
-            'text' => 'required|string|max:5000'
+            'text' => 'required|string|max:5000',
+            'language' => 'required|string'
         ]);
+
         $text = trim($request->text);
-       
+        $language = $request->language;
+
         try {
             $response = Http::withToken(env('OPENAI_API_KEY'))
                 ->post('https://api.openai.com/v1/chat/completions', [
@@ -27,7 +30,7 @@ class SpeechController extends Controller
                     'messages' => [
                         [
                             'role' => 'system',
-                            'content' => 'Convert Roman Hindi to Hindi, keep English same, fix grammar.'
+                            'content' => "Translate the following text into {$language}. Keep meaning same and fix grammar."
                         ],
                         [
                             'role' => 'user',

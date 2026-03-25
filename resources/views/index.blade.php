@@ -2,89 +2,148 @@
 <html>
 
 <head>
-    <title>Voice AI (Hindi + English)</title>
+    <title>Voice Translator Pro 🌍</title>
 
     <style>
         body {
-            font-family: Arial;
-            background: linear-gradient(135deg, #667eea, #764ba2);
             margin: 0;
+            font-family: 'Poppins', sans-serif;
+            /* background-color: black; */
+            
+            /* background: linear-gradient(135deg, #ff512f, #dd2476); */
+            
         }
 
+        /* Container */
         .container {
-            width: 450px;
-            margin: 80px auto;
-            background: rgba(255, 255, 255, 0.95);
+            width: 850px;
+            margin: 60px auto;
             padding: 30px;
             border-radius: 25px;
-            text-align: center;
-            box-shadow: 0px 20px 50px rgba(0, 0, 0, 0.3);
+
+            /* background: rgba(255, 255, 255, 0.1); */
+            background-color: hotpink;
+            backdrop-filter: blur(10px);
+
+            /* box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3); */
+            
+
         }
 
-        .mic {
-            font-size: 40px;
-            animation: float 2s infinite;
+        /* Top Bar */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
         }
 
-        @keyframes float {
-            50% {
-                transform: translateY(-5px);
-            }
-        }
-
-        h2 {
-            margin-top: 10px;
-        }
-
-        button {
-            padding: 12px 25px;
-            margin: 10px;
+        /* Dropdown */
+        select {
+            width: 45%;
+            padding: 12px;
+            border-radius: 12px;
             border: none;
-            border-radius: 30px;
-            cursor: pointer;
             font-size: 16px;
+            outline: none;
+
+            background: white;
+            color: #333;
+        }
+
+        /* Swap */
+        .swap {
+            font-size: 24px;
+            cursor: pointer;
+            color: white;
             transition: 0.3s;
         }
 
+        .swap:hover {
+            transform: rotate(180deg) scale(1.2);
+        }
+
+        /* Boxes */
+        .boxes {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        /* Textarea */
+        textarea {
+            width: 50%;
+            height: 200px;
+            border-radius: 20px;
+            border: none;
+            padding: 20px;
+            font-size: 18px;
+            outline: none;
+            resize: none;
+
+            /* 🔥 WHITE BOX */
+            background: white;
+            color: #333;
+
+            /* box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); */
+            transition: 0.3s;
+        }
+
+        /* Hover effect */
+        textarea:focus {
+            transform: scale(1.02);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Buttons */
+        .buttons {
+            text-align: center;
+            margin-top: 25px;
+        }
+
+        button {
+            padding: 12px 30px;
+            margin: 8px;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            cursor: pointer;
+            color: white;
+            transition: 0.3s;
+        }
+
+        /* Start */
         .start {
-            background: linear-gradient(45deg, green, limegreen);
-            color: white;
+            background: linear-gradient(45deg, #00c853, #64dd17);
         }
 
-        .stop {
-            background: linear-gradient(45deg, red, tomato);
-            color: white;
-        }
-
-        button:hover {
+        .start:hover {
             transform: scale(1.1);
         }
 
-        textarea {
-            width: 90%;
-            height: 140px;
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 12px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            resize: none;
+        /* Stop */
+        .stop {
+            background: linear-gradient(45deg, #ff1744, #ff616f);
         }
 
+        .stop:hover {
+            transform: scale(1.1);
+        }
+
+        /* Status */
         .status {
-            margin-top: 10px;
+            text-align: center;
+            margin-top: 15px;
             font-weight: bold;
+            color: white;
+            font-size: 18px;
         }
 
-        .recording {
-            color: red;
-            animation: blink 1s infinite;
-        }
-
-        @keyframes blink {
-            50% {
-                opacity: 0.5;
-            }
+        /* Heading */
+        h2 {
+            text-align: center;
+            color: white;
+            margin-bottom: 20px;
         }
     </style>
 </head>
@@ -93,15 +152,36 @@
 
     <div class="container">
 
-        <div class="mic">🎤</div>
-        <h2>Voice AI (Hindi + English)</h2>
+        <!-- 🔝 Language Select -->
+        <div class="top-bar">
+            <select id="fromLang">
+                <option value="English">English</option>
+                <option value="Hindi">Hindi</option>
+            </select>
 
-        <button class="start" onclick="start()">▶ Start</button>
-        <button class="stop" onclick="stop()">⏹ Stop</button>
+            <div class="swap" onclick="swapLang()">⇄</div>
+
+            <select id="toLang">
+                <option value="Hindi">Hindi</option>
+                <option value="English">English</option>
+                <option value="Bengali">Bengali</option>
+                <option value="Punjabi">Punjabi</option>
+            </select>
+        </div>
+
+        <!-- 🔲 BOXES -->
+        <div class="boxes">
+            <textarea id="inputBox" class="input" placeholder="Speak or type..."></textarea>
+            <textarea id="outputBox" class="output" placeholder="Translation..." readonly></textarea>
+        </div>
+
+        <!-- 🎤 BUTTONS -->
+        <div class="buttons">
+            <button class="start" onclick="start()">🎤 Start</button>
+            <button class="stop" onclick="stop()">⏹ Stop</button>
+        </div>
 
         <div class="status" id="status">Status: Idle</div>
-
-        <textarea id="textBox" placeholder="Speak in Hindi or English..."></textarea>
 
         <form>@csrf</form>
 
@@ -112,56 +192,40 @@
         let recognition;
         let finalText = "";
 
-        // 🎤 Start Recording
         function start() {
             recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-
-            // recognition.lang = 'en-IN';// Hindi + English mix तुम क्या कर रही हो, what are you doing?
-            recognition.lang = 'hi-IN';// Hindi + English mix तुम क्या कर रही हो, what are you doing?
+            recognition.lang = 'hi-IN';
             recognition.continuous = true;
             recognition.interimResults = true;
 
             finalText = "";
-
             document.getElementById("status").innerText = "🎙 Listening...";
-            document.getElementById("status").classList.add("recording");
 
             recognition.onresult = (event) => {
-                let interimText = "";
+                let text = "";
 
                 for (let i = event.resultIndex; i < event.results.length; i++) {
-                    let transcript = event.results[i][0].transcript;
-
-                    if (event.results[i].isFinal) {
-                        finalText += transcript + " ";
-                    } else {
-                        interimText += transcript;
-                    }
+                    text += event.results[i][0].transcript;
                 }
 
-                document.getElementById("textBox").value = finalText + interimText;
-            };
-
-            recognition.onerror = (event) => {
-                document.getElementById("status").innerText = "❌ Error: " + event.error;
+                document.getElementById("inputBox").value = text;
             };
 
             recognition.start();
         }
 
-        //  Stop + Send to AI
         function stop() {
             if (recognition) recognition.stop();
 
-            document.getElementById("status").innerText = "⏳ Processing...";
-            document.getElementById("status").classList.remove("recording");
-
-            let text = document.getElementById("textBox").value.trim();
+            let text = document.getElementById("inputBox").value.trim();
+            let language = document.getElementById("toLang").value;
 
             if (!text) {
-                document.getElementById("status").innerText = "⚠️ No speech detected";
+                document.getElementById("status").innerText = "⚠️ No speech";
                 return;
             }
+
+            document.getElementById("status").innerText = "⏳ Translating...";
 
             fetch('/save-text', {
                 method: 'POST',
@@ -169,16 +233,25 @@
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': document.querySelector('input[name=_token]').value
                 },
-                body: JSON.stringify({ text: text })
+                body: JSON.stringify({
+                    text: text,
+                    language: language
+                })
             })
                 .then(res => res.json())
                 .then(data => {
-                    document.getElementById("textBox").value = data.text;
+                    document.getElementById("outputBox").value = data.text;
                     document.getElementById("status").innerText = "✅ Done";
-                })
-                .catch(() => {
-                    document.getElementById("status").innerText = "❌ Server Error";
                 });
+        }
+
+        function swapLang() {
+            let from = document.getElementById("fromLang");
+            let to = document.getElementById("toLang");
+
+            let temp = from.value;
+            from.value = to.value;
+            to.value = temp;
         }
 
     </script>
