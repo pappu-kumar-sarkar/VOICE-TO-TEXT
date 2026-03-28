@@ -1,101 +1,61 @@
 <!DOCTYPE html>
 <html>
-
 <head>
     <title>Voice Translator Pro 🌍</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <style>
         body {
             margin: 0;
             font-family: 'Poppins', sans-serif;
-            /* background-color: black; */
-            
-            /* background: linear-gradient(135deg, #ff512f, #dd2476); */
-            
+            background: #f2f2f2;
         }
 
-        /* Container */
         .container {
             width: 850px;
             margin: 60px auto;
             padding: 30px;
             border-radius: 25px;
-
-            /* background: rgba(255, 255, 255, 0.1); */
-            background-color: hotpink;
-            backdrop-filter: blur(10px);
-
-            /* box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3); */
-            
-
+            background: linear-gradient(135deg, #ff5fa2, #ff3d7f);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
         }
 
-        /* Top Bar */
         .top-bar {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
             gap: 15px;
+            align-items: center;
         }
 
-        /* Dropdown */
         select {
             width: 45%;
             padding: 12px;
             border-radius: 12px;
             border: none;
             font-size: 16px;
-            outline: none;
-
-            background: white;
-            color: #333;
         }
 
-        /* Swap */
         .swap {
-            font-size: 24px;
-            cursor: pointer;
+            font-size: 22px;
             color: white;
-            transition: 0.3s;
+            cursor: pointer;
         }
 
-        .swap:hover {
-            transform: rotate(180deg) scale(1.2);
-        }
-
-        /* Boxes */
         .boxes {
             display: flex;
             gap: 15px;
             margin-top: 25px;
         }
 
-        /* Textarea */
         textarea {
             width: 50%;
-            height: 200px;
+            height: 180px;
             border-radius: 20px;
             border: none;
             padding: 20px;
             font-size: 18px;
-            outline: none;
             resize: none;
-
-            /* 🔥 WHITE BOX */
-            background: white;
-            color: #333;
-
-            /* box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); */
-            transition: 0.3s;
         }
 
-        /* Hover effect */
-        textarea:focus {
-            transform: scale(1.02);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
-        }
-
-        /* Buttons */
         .buttons {
             text-align: center;
             margin-top: 25px;
@@ -103,159 +63,134 @@
 
         button {
             padding: 12px 30px;
-            margin: 8px;
+            margin: 10px;
             border: none;
             border-radius: 30px;
             font-size: 16px;
-            cursor: pointer;
             color: white;
-            transition: 0.3s;
+            cursor: pointer;
         }
 
-        /* Start */
         .start {
-            background: linear-gradient(45deg, #00c853, #64dd17);
+            background: #2ecc71;
         }
 
-        .start:hover {
-            transform: scale(1.1);
-        }
-
-        /* Stop */
         .stop {
-            background: linear-gradient(45deg, #ff1744, #ff616f);
+            background: #ff4d4d;
         }
 
-        .stop:hover {
-            transform: scale(1.1);
-        }
-
-        /* Status */
         .status {
             text-align: center;
             margin-top: 15px;
+            color: white;
             font-weight: bold;
-            color: white;
-            font-size: 18px;
-        }
-
-        /* Heading */
-        h2 {
-            text-align: center;
-            color: white;
-            margin-bottom: 20px;
         }
     </style>
 </head>
 
 <body>
 
-    <div class="container">
+<div class="container">
 
-        <!-- 🔝 Language Select -->
-        <div class="top-bar">
-            <select id="fromLang">
-                <option value="English">English</option>
-                <option value="Hindi">Hindi</option>
-            </select>
+    <!-- 🌍 Language Select -->
+    <div class="top-bar">
+        <select id="fromLang">
+            <option value="hi-IN">Hindi</option>
+            <option value="en-US">English</option>
+            <option value="bn-IN">Bengali</option>
+            <option value="pa-IN">Punjabi</option>
+        </select>
 
-            <div class="swap" onclick="swapLang()">⇄</div>
+        <div class="swap" onclick="swapLang()">⇄</div>
 
-            <select id="toLang">
-                <option value="Hindi">Hindi</option>
-                <option value="English">English</option>
-                <option value="Bengali">Bengali</option>
-                <option value="Punjabi">Punjabi</option>
-            </select>
-        </div>
-
-        <!-- 🔲 BOXES -->
-        <div class="boxes">
-            <textarea id="inputBox" class="input" placeholder="Speak or type..."></textarea>
-            <textarea id="outputBox" class="output" placeholder="Translation..." readonly></textarea>
-        </div>
-
-        <!-- 🎤 BUTTONS -->
-        <div class="buttons">
-            <button class="start" onclick="start()">🎤 Start</button>
-            <button class="stop" onclick="stop()">⏹ Stop</button>
-        </div>
-
-        <div class="status" id="status">Status: Idle</div>
-
-        <form>@csrf</form>
-
+        <select id="toLang">
+            <option value="English">English</option>
+            <option value="Hindi">Hindi</option>
+            <option value="Bengali">Bengali</option>
+            <option value="Punjabi">Punjabi</option>
+        </select>
     </div>
 
-    <script>
+    <!-- 📦 Boxes -->
+    <div class="boxes">
+        <textarea id="inputBox" placeholder="Speak or type..."></textarea>
+        <textarea id="outputBox" placeholder="Translation..." readonly></textarea>
+    </div>
 
-        let recognition;
-        let finalText = "";
+    <!-- 🎤 Buttons -->
+    <div class="buttons">
+        <button class="start" onclick="start()">🎤 Start</button>
+        <button class="stop" onclick="stop()">⏹ Stop</button>
+    </div>
 
-        function start() {
-            recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            recognition.lang = 'hi-IN';
-            recognition.continuous = true;
-            recognition.interimResults = true;
+    <div class="status" id="status">Status: Idle</div>
+</div>
 
-            finalText = "";
-            document.getElementById("status").innerText = "🎙 Listening...";
+<script>
+let recognition;
 
-            recognition.onresult = (event) => {
-                let text = "";
+function start() {
+    recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
 
-                for (let i = event.resultIndex; i < event.results.length; i++) {
-                    text += event.results[i][0].transcript;
-                }
+    recognition.lang = document.getElementById("fromLang").value;
+    recognition.continuous = true;
+    recognition.interimResults = true;
 
-                document.getElementById("inputBox").value = text;
-            };
+    recognition.onresult = function(event) {
+        let text = "";
 
-            recognition.start();
+        for (let i = 0; i < event.results.length; i++) {
+            text += event.results[i][0].transcript;
         }
 
-        function stop() {
-            if (recognition) recognition.stop();
+        document.getElementById("inputBox").value = text;
+    };
 
-            let text = document.getElementById("inputBox").value.trim();
-            let language = document.getElementById("toLang").value;
+    recognition.start();
+    document.getElementById("status").innerText = "🎙 Listening...";
+}
 
-            if (!text) {
-                document.getElementById("status").innerText = "⚠️ No speech";
-                return;
-            }
+// 🔥 Translate when language change
+document.getElementById("toLang").addEventListener("change", function() {
+    let text = document.getElementById("inputBox").value;
 
-            document.getElementById("status").innerText = "⏳ Translating...";
+    if (text.trim() === "") return;
 
-            fetch('/save-text', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('input[name=_token]').value
-                },
-                body: JSON.stringify({
-                    text: text,
-                    language: language
-                })
-            })
-                .then(res => res.json())
-                .then(data => {
-                    document.getElementById("outputBox").value = data.text;
-                    document.getElementById("status").innerText = "✅ Done";
-                });
-        }
+    document.getElementById("status").innerText = "⏳ Translating...";
 
-        function swapLang() {
-            let from = document.getElementById("fromLang");
-            let to = document.getElementById("toLang");
+    fetch('/save-text', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({
+            text: text,
+            language: this.value
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("outputBox").value = data.text;
+        document.getElementById("status").innerText = "✅ Done";
+    });
+});
 
-            let temp = from.value;
-            from.value = to.value;
-            to.value = temp;
-        }
+function stop() {
+    if (recognition) recognition.stop();
+    document.getElementById("status").innerText = "🛑 Stopped";
+}
 
-    </script>
+// 🔄 Swap Language
+function swapLang() {
+    let from = document.getElementById("fromLang");
+    let to = document.getElementById("toLang");
+
+    let temp = from.value;
+    from.value = to.value === "English" ? "en-US" : "hi-IN";
+    to.value = temp === "hi-IN" ? "Hindi" : "English";
+}
+</script>
 
 </body>
-
 </html>

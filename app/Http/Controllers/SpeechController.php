@@ -15,45 +15,64 @@ class SpeechController extends Controller
 
     public function saveText(Request $request)
     {
-        $request->validate([
-            'text' => 'required|string|max:5000',
-            'language' => 'required|string'
-        ]);
-
         $text = trim($request->text);
-        $language = $request->language;
+        $target = $request->language;
+
+        $langMap = [
+            'English' => 'en',
+            'Hindi' => 'hi',
+            'Bengali' => 'bn',
+            'Punjabi' => 'pa'
+        ];
+
+        $targetLang = $langMap[$target] ?? 'en';
+
+        $translatedText = $text;
 
         try {
-            $response = Http::withToken(env('OPENAI_API_KEY'))
+            // 🔥 STEP 1: Google Translate (FAST)
+            $google = Http::get("https://translate.googleapis.com/translate_a/single", [
+                'client' => 'gtx',
+                'sl' => 'auto',
+                'tl' => $targetLang,
+                'dt' => 't',
+                'q' => $text
+            ]);
+
+            $gData = $google->json();
+            $translatedText = $gData[0][0][0] ?? $text;
+
+            // 🔥 STEP 2: OpenAI (SMART IMPROVE)
+            $ai = Http::withToken(env('OPENAI_API_KEY'))
                 ->post('https://api.openai.com/v1/chat/completions', [
                     'model' => 'gpt-4o-mini',
                     'messages' => [
                         [
                             'role' => 'system',
-                            'content' => "Translate the following text into {$language}. Keep meaning same and fix grammar."
+                            'content' => "Improve and correct this translation in {$target}. Make it natural."
                         ],
                         [
                             'role' => 'user',
-                            'content' => $text
+                            'content' => $translatedText
                         ]
                     ]
                 ]);
 
-            if ($response->successful()) {
-                $data = $response->json();
+            if ($ai->successful()) {
+                $aData = $ai->json();
 
-                if (!empty($data['choices'][0]['message']['content'])) {
-                    $text = trim($data['choices'][0]['message']['content']);
+                if (!empty($aData['choices'][0]['message']['content'])) {
+                    $translatedText = trim($aData['choices'][0]['message']['content']);
                 }
             }
 
             Speech::create([
-                'transcription' => $text
+                'transcription' => $translatedText
             ]);
 
             return response()->json([
                 'status' => true,
-                'text' => $text
+                'text' => $translatedText
             ]);
 
         } catch (\Exception $e) {
