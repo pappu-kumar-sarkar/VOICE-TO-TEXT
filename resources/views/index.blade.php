@@ -71,13 +71,9 @@
             cursor: pointer;
         }
 
-        .start {
-            background: #2ecc71;
-        }
-
-        .stop {
-            background: #ff4d4d;
-        }
+        .start { background: #2ecc71; }
+        .stop { background: #ff4d4d; }
+        .listen { background: #3498db; }
 
         .status {
             text-align: center;
@@ -92,7 +88,6 @@
 
 <div class="container">
 
-    <!-- 🌍 Language Select -->
     <div class="top-bar">
         <select id="fromLang">
             <option value="hi-IN">Hindi</option>
@@ -111,16 +106,15 @@
         </select>
     </div>
 
-    <!-- 📦 Boxes -->
     <div class="boxes">
         <textarea id="inputBox" placeholder="Speak or type..."></textarea>
         <textarea id="outputBox" placeholder="Translation..." readonly></textarea>
     </div>
 
-    <!-- 🎤 Buttons -->
     <div class="buttons">
         <button class="start" onclick="start()">🎤 Start</button>
         <button class="stop" onclick="stop()">⏹ Stop</button>
+        <button class="listen" onclick="speakText()">🔊 Listen</button>
     </div>
 
     <div class="status" id="status">Status: Idle</div>
@@ -138,11 +132,9 @@ function start() {
 
     recognition.onresult = function(event) {
         let text = "";
-
         for (let i = 0; i < event.results.length; i++) {
             text += event.results[i][0].transcript;
         }
-
         document.getElementById("inputBox").value = text;
     };
 
@@ -150,10 +142,9 @@ function start() {
     document.getElementById("status").innerText = "🎙 Listening...";
 }
 
-// 🔥 Translate when language change
+// translate
 document.getElementById("toLang").addEventListener("change", function() {
     let text = document.getElementById("inputBox").value;
-
     if (text.trim() === "") return;
 
     document.getElementById("status").innerText = "⏳ Translating...";
@@ -181,7 +172,47 @@ function stop() {
     document.getElementById("status").innerText = "🛑 Stopped";
 }
 
-// 🔄 Swap Language
+// 🔊 FEMALE VOICE FUNCTION
+function speakText() {
+    let text = document.getElementById("outputBox").value;
+
+    if (text.trim() === "") {
+        alert("No text to speak");
+        return;
+    }
+
+    let speech = new SpeechSynthesisUtterance();
+    speech.text = text;
+
+    let lang = document.getElementById("toLang").value;
+
+    if (lang === "Hindi") speech.lang = "hi-IN";
+    else if (lang === "English") speech.lang = "en-US";
+    else if (lang === "Bengali") speech.lang = "bn-IN";
+    else if (lang === "Punjabi") speech.lang = "pa-IN";
+
+    let voices = window.speechSynthesis.getVoices();
+
+    let femaleVoice = voices.find(v =>
+        v.lang.includes(speech.lang) &&
+        (v.name.toLowerCase().includes("female") ||
+         v.name.toLowerCase().includes("zira") ||
+         v.name.toLowerCase().includes("google"))
+    );
+
+    if (femaleVoice) speech.voice = femaleVoice;
+
+    speech.pitch = 1.2;
+    speech.rate = 0.9;
+
+    window.speechSynthesis.speak(speech);
+}
+
+// load voices fix
+window.speechSynthesis.onvoiceschanged = () => {
+    window.speechSynthesis.getVoices();
+};
+
 function swapLang() {
     let from = document.getElementById("fromLang");
     let to = document.getElementById("toLang");

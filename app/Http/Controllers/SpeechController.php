@@ -30,7 +30,6 @@ class SpeechController extends Controller
         $translatedText = $text;
 
         try {
-            // 🔥 STEP 1: Google Translate (FAST)
             $google = Http::get("https://translate.googleapis.com/translate_a/single", [
                 'client' => 'gtx',
                 'sl' => 'auto',
@@ -42,7 +41,6 @@ class SpeechController extends Controller
             $gData = $google->json();
             $translatedText = $gData[0][0][0] ?? $text;
 
-            // 🔥 STEP 2: OpenAI (SMART IMPROVE)
             $ai = Http::withToken(env('OPENAI_API_KEY'))
                 ->post('https://api.openai.com/v1/chat/completions', [
                     'model' => 'gpt-4o-mini',
