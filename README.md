@@ -5,7 +5,7 @@ A powerful **real-time voice translator web app** built using **Laravel (Backend
 👉 User bolta hai → text me convert hota hai → instantly translate hota hai → audio ke sath output milta hai 🔥
 
 ---
-
+![Project Screenshot](public/voice-to-text.png)
 ## 🚀 Features
 
 ✅ Real-time Voice to Text
