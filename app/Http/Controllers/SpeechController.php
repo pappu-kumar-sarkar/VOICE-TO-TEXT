@@ -18,25 +18,33 @@ class SpeechController extends Controller
         $text = trim($request->text);
         $target = $request->language;
 
+        if (!$text) {
+            return response()->json([
+                'status' => false,
+                'text' => ''
+            ]);
+        }
+
         $langMap = [
             'English' => 'en',
             'Hindi' => 'hi',
             'Bengali' => 'bn',
             'Punjabi' => 'pa',
-            'Spanish' => 'es',
-            'French' => 'fr',
-            'German' => 'de',
-            'Urdu' => 'ur',
             'Tamil' => 'ta',
             'Telugu' => 'te',
-            'Marathi' => 'mr'
+            'Marathi' => 'mr',
+            'Urdu' => 'ur',
+            'Spanish' => 'es',
+            'French' => 'fr',
+            'German' => 'de'
         ];
 
         $targetLang = $langMap[$target] ?? 'en';
 
         try {
 
-            $google = Http::get("https://translate.googleapis.com/translate_a/single", [
+            // ⚡ Google Translate
+            $google = Http::timeout(5)->get("https://translate.googleapis.com/translate_a/single", [
                 'client' => 'gtx',
                 'sl' => 'auto',
                 'tl' => $targetLang,
@@ -46,38 +54,37 @@ class SpeechController extends Controller
 
             $translatedText = $google->json()[0][0][0] ?? $text;
 
-            $ai = Http::withToken(env('OPENAI_API_KEY'))
-                ->post('https://api.openai.com/v1/chat/completions', [
-                    'model' => 'gpt-4o-mini',
-                    'messages' => [
-                        [
-                            'role' => 'system',
-                            'content' => "Improve and correct this translation in {$target}. Make it natural."
-                        ],
-                        [
-                            'role' => 'user',
-                            'content' => $translatedText
+            // 🧠 OpenAI Improve
+            try {
+                $ai = Http::withToken(env('OPENAI_API_KEY'))
+                    ->timeout(5)
+                    ->post('https://api.openai.com/v1/chat/completions', [
+                        'model' => 'gpt-4o-mini',
+                        'messages' => [
+                            [
+                                'role' => 'system',
+                                'content' => "Improve this {$target} translation naturally."
+                            ],
+                            [
+                                'role' => 'user',
+                                'content' => $translatedText
+                            ]
                         ]
-                    ]
-                ]);
+                    ]);
 
-            if ($ai->successful()) {
-                $aData = $ai->json();
-                if (!empty($aData['choices'][0]['message']['content'])) {
-                    $translatedText = trim($aData['choices'][0]['message']['content']);
+                if ($ai->successful()) {
+                    $translatedText = $ai->json()['choices'][0]['message']['content'] ?? $translatedText;
                 }
+            } catch (\Exception $e) {
             }
 
-            $audioResponse = Http::withHeaders([
-                'User-Agent' => 'Mozilla/5.0'
-            ])->get("https://translate.google.com/translate_tts", [
+            // 🔊 Audio
+            $audio = Http::get("https://translate.google.com/translate_tts", [
                 'ie' => 'UTF-8',
                 'q' => $translatedText,
                 'tl' => $targetLang,
                 'client' => 'tw-ob'
             ]);
-
-            $audioBase64 = base64_encode($audioResponse->body());
 
             Speech::create([
                 'transcription' => $translatedText
@@ -85,8 +92,8 @@ class SpeechController extends Controller
 
             return response()->json([
                 'status' => true,
-                'text' => $translatedText,
-                'audio' => "data:audio/mpeg;base64," . $audioBase64
+                'text' => trim($translatedText),
+                'audio' => "data:audio/mpeg;base64," . base64_encode($audio->body())
             ]);
 
         } catch (\Exception $e) {
