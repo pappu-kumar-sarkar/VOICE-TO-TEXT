@@ -115,6 +115,7 @@
             <div class="swap" onclick="swapLang()">⇄</div>
 
             <select id="toLang">
+               
                 <option>English</option>
                 <option>Hindi</option>
                 <option>Bengali</option>
