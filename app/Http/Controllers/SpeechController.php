@@ -22,14 +22,20 @@ class SpeechController extends Controller
             'English' => 'en',
             'Hindi' => 'hi',
             'Bengali' => 'bn',
-            'Punjabi' => 'pa'
+            'Punjabi' => 'pa',
+            'Spanish' => 'es',
+            'French' => 'fr',
+            'German' => 'de',
+            'Urdu' => 'ur',
+            'Tamil' => 'ta',
+            'Telugu' => 'te',
+            'Marathi' => 'mr'
         ];
 
         $targetLang = $langMap[$target] ?? 'en';
 
-        $translatedText = $text;
-
         try {
+
             $google = Http::get("https://translate.googleapis.com/translate_a/single", [
                 'client' => 'gtx',
                 'sl' => 'auto',
@@ -38,8 +44,7 @@ class SpeechController extends Controller
                 'q' => $text
             ]);
 
-            $gData = $google->json();
-            $translatedText = $gData[0][0][0] ?? $text;
+            $translatedText = $google->json()[0][0][0] ?? $text;
 
             $ai = Http::withToken(env('OPENAI_API_KEY'))
                 ->post('https://api.openai.com/v1/chat/completions', [
@@ -58,11 +63,21 @@ class SpeechController extends Controller
 
             if ($ai->successful()) {
                 $aData = $ai->json();
-
                 if (!empty($aData['choices'][0]['message']['content'])) {
                     $translatedText = trim($aData['choices'][0]['message']['content']);
                 }
             }
+
+            $audioResponse = Http::withHeaders([
+                'User-Agent' => 'Mozilla/5.0'
+            ])->get("https://translate.google.com/translate_tts", [
+                'ie' => 'UTF-8',
+                'q' => $translatedText,
+                'tl' => $targetLang,
+                'client' => 'tw-ob'
+            ]);
+
+            $audioBase64 = base64_encode($audioResponse->body());
 
             Speech::create([
                 'transcription' => $translatedText
@@ -70,7 +85,8 @@ class SpeechController extends Controller
 
             return response()->json([
                 'status' => true,
-                'text' => $translatedText
+                'text' => $translatedText,
+                'audio' => "data:audio/mpeg;base64," . $audioBase64
             ]);
 
         } catch (\Exception $e) {
